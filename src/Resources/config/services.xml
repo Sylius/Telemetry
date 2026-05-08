@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+ This file is part of the Sylius package.
+
+ (c) Sylius Sp. z o.o.
+
+ For the full copyright and license information, please view the LICENSE
+ file that was distributed with this source code.
+
+-->
+
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <!-- Query helper -->
+        <service
+            id="sylius.telemetry.query.timeout_runner"
+            class="Sylius\Telemetry\Query\TimeoutRunner"
+        >
+            <argument>%sylius_core.telemetry.query_timeout%</argument>
+        </service>
+
+        <!-- Identity -->
+        <service
+            id="sylius.telemetry.installation_id_generator"
+            class="Sylius\Telemetry\Generator\InstallationIdGenerator"
+            lazy="Sylius\Telemetry\Generator\InstallationIdGeneratorInterface"
+        >
+            <argument>%sylius_core.telemetry.salt%</argument>
+        </service>
+
+        <!-- Technical providers -->
+        <service
+            id="sylius.telemetry.data_provider.version"
+            class="Sylius\Telemetry\Provider\Technical\VersionDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument>%sylius_core.telemetry.sylius_version%</argument>
+            <tag name="sylius.telemetry.technical_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.database_platform"
+            class="Sylius\Telemetry\Provider\Technical\DatabasePlatformDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine" />
+            <tag name="sylius.telemetry.technical_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.environment"
+            class="Sylius\Telemetry\Provider\Technical\EnvironmentDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument>%kernel.environment%</argument>
+            <tag name="sylius.telemetry.technical_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.collector.technical"
+            class="Sylius\Telemetry\Collector\TechnicalDataCollector"
+            lazy="Sylius\Telemetry\Collector\TelemetryDataCollectorInterface"
+        >
+            <argument type="tagged_iterator" tag="sylius.telemetry.technical_data_provider" />
+            <argument>%sylius_core.telemetry.technical%</argument>
+            <tag name="sylius.telemetry.collector" />
+        </service>
+
+        <!-- Plugins providers -->
+        <service
+            id="sylius.telemetry.data_provider.installed_plugins"
+            class="Sylius\Telemetry\Provider\Plugins\InstalledPluginsDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <tag name="sylius.telemetry.plugins_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.collector.plugins"
+            class="Sylius\Telemetry\Collector\PluginsDataCollector"
+            lazy="Sylius\Telemetry\Collector\TelemetryDataCollectorInterface"
+        >
+            <argument type="tagged_iterator" tag="sylius.telemetry.plugins_data_provider" />
+            <argument>%sylius_core.telemetry.plugins%</argument>
+            <tag name="sylius.telemetry.collector" />
+        </service>
+
+        <!-- Business providers -->
+        <service
+            id="sylius.telemetry.data_provider.locales"
+            class="Sylius\Telemetry\Provider\Business\LocalesDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="sylius.telemetry.query.timeout_runner" />
+            <argument type="string">%locale%</argument>
+            <tag name="sylius.telemetry.business_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.currencies"
+            class="Sylius\Telemetry\Provider\Business\CurrenciesDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="sylius.telemetry.query.timeout_runner" />
+            <tag name="sylius.telemetry.business_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.payment_methods"
+            class="Sylius\Telemetry\Provider\Business\PaymentMethodsDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="sylius.telemetry.query.timeout_runner" />
+            <tag name="sylius.telemetry.business_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.shipping_methods"
+            class="Sylius\Telemetry\Provider\Business\ShippingMethodsDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="sylius.telemetry.query.timeout_runner" />
+            <tag name="sylius.telemetry.business_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.metrics_counts"
+            class="Sylius\Telemetry\Provider\Business\MetricsCountsDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="sylius.telemetry.query.timeout_runner" />
+            <tag name="sylius.telemetry.business_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.orders_business"
+            class="Sylius\Telemetry\Provider\Business\OrdersBusinessDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="sylius.telemetry.query.timeout_runner" />
+            <tag name="sylius.telemetry.business_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.data_provider.countries"
+            class="Sylius\Telemetry\Provider\Business\CountriesDataProvider"
+            lazy="Sylius\Telemetry\DataProvider\DataProviderInterface"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <argument type="service" id="sylius.telemetry.query.timeout_runner" />
+            <tag name="sylius.telemetry.business_data_provider" />
+        </service>
+
+        <service
+            id="sylius.telemetry.collector.business"
+            class="Sylius\Telemetry\Collector\BusinessDataCollector"
+            lazy="Sylius\Telemetry\Collector\TelemetryDataCollectorInterface"
+        >
+            <argument type="tagged_iterator" tag="sylius.telemetry.business_data_provider" />
+            <argument>%sylius_core.telemetry.business%</argument>
+            <tag name="sylius.telemetry.collector" />
+        </service>
+
+        <!-- Orchestration -->
+        <service
+            id="sylius.telemetry.orchestrator"
+            class="Sylius\Telemetry\TelemetryOrchestrator"
+            lazy="Sylius\Telemetry\TelemetryOrchestratorInterface"
+        >
+            <argument type="service" id="sylius.telemetry.installation_id_generator" />
+            <argument type="tagged_iterator" tag="sylius.telemetry.collector" />
+        </service>
+
+        <service
+            id="sylius.telemetry.cache"
+            class="Sylius\Telemetry\Cache\TelemetryCache"
+            lazy="Sylius\Telemetry\Cache\TelemetryCacheInterface"
+        >
+            <argument type="service" id="cache.app" />
+        </service>
+
+        <service
+            id="sylius.telemetry.send_manager"
+            class="Sylius\Telemetry\TelemetrySendManager"
+            lazy="Sylius\Telemetry\TelemetrySendManagerInterface"
+        >
+            <argument type="service" id="sylius.telemetry.orchestrator" />
+            <argument type="service" id="sylius.telemetry.cache" />
+            <argument type="service" id="sylius.telemetry.sender" />
+        </service>
+
+        <!-- Sender (PSR-18 client auto-discovered when not injected) -->
+        <service
+            id="sylius.telemetry.sender"
+            class="Sylius\Telemetry\Sender\TelemetrySender"
+            lazy="Sylius\Telemetry\Sender\TelemetrySenderInterface"
+        >
+            <argument>%sylius_core.telemetry.url%</argument>
+        </service>
+
+        <!-- Listeners -->
+        <service
+            id="sylius.telemetry.listener"
+            class="Sylius\Telemetry\EventListener\TelemetryListener"
+            lazy="true"
+        >
+            <argument type="service" id="sylius.telemetry.send_manager" />
+            <argument type="service" id="sylius.telemetry.cache" />
+            <argument>%sylius_core.telemetry.admin_route_prefix%</argument>
+            <tag name="kernel.event_listener" event="kernel.terminate" method="onAdminAccess" priority="-1024" />
+        </service>
+
+        <service
+            id="sylius.telemetry.listener.index_schema"
+            class="Sylius\Telemetry\EventListener\TelemetryIndexSchemaListener"
+        >
+            <argument type="service" id="doctrine.dbal.default_connection" />
+            <tag name="doctrine.event_listener" event="postGenerateSchema" />
+        </service>
+    </services>
+</container>
