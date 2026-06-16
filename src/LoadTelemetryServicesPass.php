@@ -21,6 +21,11 @@ final class LoadTelemetryServicesPass implements CompilerPassInterface
             return;
         }
 
+        $env = (string) $container->getParameter('kernel.environment');
+        if (0 === strpos($env, 'dev') || 0 === strpos($env, 'test')) {
+            return;
+        }
+
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/Resources/config'));
         $loader->load('services.xml');
     }
