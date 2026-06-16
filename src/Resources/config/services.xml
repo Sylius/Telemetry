@@ -225,5 +225,14 @@
             <argument type="service" id="doctrine.dbal.default_connection" />
             <tag name="doctrine.event_listener" event="postGenerateSchema" />
         </service>
+
+        <service
+            id="sylius.telemetry.listener.notice"
+            class="Sylius\Telemetry\EventListener\TelemetryNoticeListener"
+        >
+            <argument type="service" id="cache.app" />
+            <argument>%sylius_core.telemetry.sylius_version%</argument>
+            <tag name="kernel.event_listener" event="console.terminate" method="onConsoleTerminate" />
+        </service>
     </services>
 </container>
