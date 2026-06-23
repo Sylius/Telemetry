@@ -80,16 +80,10 @@ final class TimeoutRunner
             return sprintf('SET STATEMENT max_statement_time=%s FOR %s', $timeoutSeconds, $sql);
         }
 
-        // MySQL: SELECT /*+ MAX_EXECUTION_TIME(X) */ ... (optimizer hint, milliseconds)
-        if (self::isMySQL($platform)) {
-            return preg_replace(
-                '/^\s*SELECT\b/i',
-                sprintf('SELECT /*+ MAX_EXECUTION_TIME(%d) */', $this->timeoutMs),
-                $sql,
-                1
-            );
-        }
-
+        // MySQL: handled in executeInTimeoutContext via the max_execution_time session var.
+        // The /*+ MAX_EXECUTION_TIME(X) */ optimizer hint is silently NOT enforced on MySQL 8
+        // for these queries (verified on 8.0.45: a 130s query ran to completion under a 5s
+        // hint), whereas the session variable aborts correctly.
         // PostgreSQL: handled in executeInTimeoutContext via SET LOCAL inside a transaction.
         return $sql;
     }
@@ -122,7 +116,19 @@ final class TimeoutRunner
             }
         }
 
-        // MySQL/MariaDB: timeout is embedded in the SQL itself.
+        // MySQL (not MariaDB): the optimizer hint is unreliable, so use the session variable,
+        // which is honored. Reset afterwards because the connection may be reused.
+        if (self::isMySQL($platform) && !self::isMariaDB($platform)) {
+            $connection->executeStatement('SET max_execution_time = ' . (int) $this->timeoutMs);
+
+            try {
+                return $callback();
+            } finally {
+                $connection->executeStatement('SET max_execution_time = 0');
+            }
+        }
+
+        // MariaDB: timeout is embedded in the SQL itself (SET STATEMENT ... FOR).
         return $callback();
     }
 

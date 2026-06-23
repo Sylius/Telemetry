@@ -51,13 +51,55 @@ final class ValueRangeMapper
         \PHP_INT_MAX => '2M+',
     ];
 
-    private const CUSTOMER_ORDER_PAYMENT_SHIPMENT_RANGES = [
-        100 => '0-100',
-        1000 => '100-1K',
-        10000 => '1K-10K',
-        100000 => '10K-100K',
-        1000000 => '100K-1M',
-        \PHP_INT_MAX => '1M+',
+    /**
+     * Monthly new customers (`created_at >= -1 month`). Decoupled from the
+     * payment/shipment monthly ranges so it can be re-tuned independently once
+     * real monthly data is available. Boundaries are reasoned about scale, not
+     * fitted to the legacy all-time CSV export.
+     */
+    private const MONTHLY_CUSTOMERS_RANGES = [
+        10 => '0-10',
+        25 => '10-25',
+        50 => '25-50',
+        100 => '50-100',
+        250 => '100-250',
+        500 => '250-500',
+        1000 => '500-1K',
+        5000 => '1K-5K',
+        10000 => '5K-10K',
+        \PHP_INT_MAX => '10K+',
+    ];
+
+    /**
+     * Per-provider monthly counts (payments, shipments) live at a much smaller
+     * scale than all-time totals, so the low end is denser and the ceiling lower.
+     */
+    private const MONTHLY_COUNT_RANGES = [
+        10 => '0-10',
+        25 => '10-25',
+        50 => '25-50',
+        100 => '50-100',
+        250 => '100-250',
+        500 => '250-500',
+        1000 => '500-1K',
+        5000 => '1K-5K',
+        10000 => '5K-10K',
+        \PHP_INT_MAX => '10K+',
+    ];
+
+    /**
+     * Most stores have few or no virtual variants, so the low end is denser
+     * than the shared COUNT_RANGES to keep resolution where the data sits.
+     */
+    private const VIRTUAL_VARIANTS_RANGES = [
+        10 => '0-10',
+        50 => '10-50',
+        100 => '50-100',
+        500 => '100-500',
+        1000 => '500-1K',
+        5000 => '1K-5K',
+        10000 => '5K-10K',
+        \PHP_INT_MAX => '10K+',
     ];
 
     private const AVG_ITEMS_RANGES = [
@@ -91,17 +133,12 @@ final class ValueRangeMapper
 
     public static function mapVirtualVariantsCount(int $value): string
     {
-        return self::mapToRange($value, self::COUNT_RANGES);
+        return self::mapToRange($value, self::VIRTUAL_VARIANTS_RANGES);
     }
 
     public static function mapCustomersCount(int $value): string
     {
-        return self::mapToRange($value, self::CUSTOMER_ORDER_PAYMENT_SHIPMENT_RANGES);
-    }
-
-    public static function mapOrdersCount(int $value): string
-    {
-        return self::mapToRange($value, self::CUSTOMER_ORDER_PAYMENT_SHIPMENT_RANGES);
+        return self::mapToRange($value, self::MONTHLY_CUSTOMERS_RANGES);
     }
 
     /** @param int|float $value */
@@ -112,12 +149,12 @@ final class ValueRangeMapper
 
     public static function mapShipmentsCount(int $value): string
     {
-        return self::mapToRange($value, self::CUSTOMER_ORDER_PAYMENT_SHIPMENT_RANGES);
+        return self::mapToRange($value, self::MONTHLY_COUNT_RANGES);
     }
 
     public static function mapPaymentsCount(int $value): string
     {
-        return self::mapToRange($value, self::CUSTOMER_ORDER_PAYMENT_SHIPMENT_RANGES);
+        return self::mapToRange($value, self::MONTHLY_COUNT_RANGES);
     }
 
     /**

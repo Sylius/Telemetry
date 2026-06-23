@@ -101,7 +101,6 @@ final class OrdersBusinessDataProvider implements DataProviderInterface
     {
         $gmvByCurrency = [];
         $aovByCurrency = [];
-        $totalOrders = 0;
         $totalAvgItems = 0;
         $totalAvgUnits = 0;
         $currencyCount = 0;
@@ -117,7 +116,6 @@ final class OrdersBusinessDataProvider implements DataProviderInterface
             $gmvByCurrency[$currency] = ValueRangeMapper::mapGmv($gmv);
             $aovByCurrency[$currency] = ValueRangeMapper::mapAov($aov);
 
-            $totalOrders += $orderCount;
             $totalAvgItems += (float) $row['avg_items'];
             $totalAvgUnits += (float) $row['avg_units'];
             ++$currencyCount;
@@ -126,7 +124,6 @@ final class OrdersBusinessDataProvider implements DataProviderInterface
         return [
             'gmv_by_currency' => $gmvByCurrency,
             'aov_by_currency' => $aovByCurrency,
-            'total_orders' => $totalOrders,
             'avg_items' => $currencyCount > 0 ? $totalAvgItems / $currencyCount : 0,
             'avg_units' => $currencyCount > 0 ? $totalAvgUnits / $currencyCount : 0,
         ];
@@ -139,7 +136,6 @@ final class OrdersBusinessDataProvider implements DataProviderInterface
             $processedData['gmv_by_currency'],
             $processedData['aov_by_currency'],
             new OrderMetricsData(
-                ValueRangeMapper::mapOrdersCount($processedData['total_orders']),
                 ValueRangeMapper::mapAvgItems($processedData['avg_items']),
                 ValueRangeMapper::mapAvgItems($processedData['avg_units'])
             )
@@ -152,7 +148,6 @@ final class OrdersBusinessDataProvider implements DataProviderInterface
             [],
             [],
             new OrderMetricsData(
-                ValueRangeMapper::mapOrdersCount(0),
                 ValueRangeMapper::mapAvgItems(0),
                 ValueRangeMapper::mapAvgItems(0)
             )

@@ -50,19 +50,35 @@ final class ValueRangeMapperTest extends TestCase
         yield [99999.0, '50K+'];
     }
 
-    public function testItMapsCustomerOrderPaymentShipmentRanges(): void
+    public function testItMapsCustomersCountOnMonthlyRanges(): void
     {
-        self::assertSame('0-100', ValueRangeMapper::mapCustomersCount(0));
-        self::assertSame('0-100', ValueRangeMapper::mapOrdersCount(99));
-        self::assertSame('100-1K', ValueRangeMapper::mapShipmentsCount(100));
-        self::assertSame('1M+', ValueRangeMapper::mapPaymentsCount(2_000_000));
+        self::assertSame('0-10', ValueRangeMapper::mapCustomersCount(0));
+        self::assertSame('50-100', ValueRangeMapper::mapCustomersCount(50));
+        self::assertSame('1K-5K', ValueRangeMapper::mapCustomersCount(1_500));
+        self::assertSame('10K+', ValueRangeMapper::mapCustomersCount(2_000_000));
+    }
+
+    public function testItMapsPaymentsAndShipmentsOnMonthlyRanges(): void
+    {
+        self::assertSame('0-10', ValueRangeMapper::mapShipmentsCount(0));
+        self::assertSame('50-100', ValueRangeMapper::mapShipmentsCount(50));
+        self::assertSame('100-250', ValueRangeMapper::mapPaymentsCount(100));
+        self::assertSame('10K+', ValueRangeMapper::mapPaymentsCount(2_000_000));
     }
 
     public function testItMapsCountRanges(): void
     {
         self::assertSame('0-100', ValueRangeMapper::mapProductsCount(0));
         self::assertSame('1K-10K', ValueRangeMapper::mapVariantsCount(1500));
-        self::assertSame('2M+', ValueRangeMapper::mapVirtualVariantsCount(3_000_000));
+        self::assertSame('2M+', ValueRangeMapper::mapProductsCount(3_000_000));
+    }
+
+    public function testItMapsVirtualVariantsOnDenserRanges(): void
+    {
+        self::assertSame('0-10', ValueRangeMapper::mapVirtualVariantsCount(0));
+        self::assertSame('10-50', ValueRangeMapper::mapVirtualVariantsCount(10));
+        self::assertSame('50-100', ValueRangeMapper::mapVirtualVariantsCount(99));
+        self::assertSame('10K+', ValueRangeMapper::mapVirtualVariantsCount(3_000_000));
     }
 
     public function testItMapsAvgItems(): void
