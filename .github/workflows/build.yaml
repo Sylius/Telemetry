@@ -6,7 +6,41 @@ on:
     workflow_dispatch: ~
 
 jobs:
-    tests:
+    unit:
+        name: "Unit (PHP ${{ matrix.php }}${{ matrix.prefer_lowest && ' lowest' || '' }})"
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    -   php: "8.1"
+                        prefer_lowest: true
+                    -   php: "8.2"
+                    -   php: "8.3"
+                    -   php: "8.4"
+        steps:
+            -   uses: actions/checkout@v4
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: "${{ matrix.php }}"
+                    coverage: none
+                    tools: composer:v2
+
+            -   name: Install dependencies
+                run: |
+                    if [ "${{ matrix.prefer_lowest }}" = "true" ]; then
+                        composer update --no-interaction --prefer-dist --no-progress --prefer-lowest --prefer-stable
+                    else
+                        composer install --no-interaction --prefer-dist --no-progress
+                    fi
+
+            -   name: Run unit tests
+                run: vendor/bin/phpunit tests/Unit
+
+    integration:
+        name: "Integration (PHP ${{ matrix.php }}, Sf ${{ matrix.symfony }}, Sylius ${{ matrix.sylius }})"
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
@@ -46,7 +80,7 @@ jobs:
                     -   php: "8.5"
                         symfony: "7.4"
                         sylius: "~2.2.0"
-        name: "PHPUnit (PHP ${{ matrix.php }}, Symfony ${{ matrix.symfony }}, Sylius ${{ matrix.sylius }})"
+
         steps:
             -   uses: actions/checkout@v4
 

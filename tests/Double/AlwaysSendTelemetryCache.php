@@ -18,6 +18,15 @@ final class AlwaysSendTelemetryCache implements TelemetryCacheInterface
         return ['installation_id' => 'test-installation'];
     }
 
+    public function wasRecentlyTriggered(): bool
+    {
+        return false;
+    }
+
+    public function markAsRecentlyTriggered(): void
+    {
+    }
+
     public function storeSuccess(string $installationId): void
     {
     }

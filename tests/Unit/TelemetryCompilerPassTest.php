@@ -40,9 +40,10 @@ final class TelemetryCompilerPassTest extends TestCase
         $this->assertFalse($container->has('sylius.telemetry.send_manager'));
     }
 
-    public function testItSkipsWhenSyliusDoesNotSupportTelemetry(): void
+    public function testItSkipsWhenTelemetryIsNotSupported(): void
     {
         $container = $this->createContainer('prod');
+        $this->setTelemetryParameters($container);
 
         $pass = new class () extends TelemetryCompilerPass {
             protected function isTelemetrySupported(): bool
